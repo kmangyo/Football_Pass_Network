@@ -3,8 +3,13 @@ library(dplyr)
 library(reshape2)
 library(igraph)
 
+# This idea is from below article (pass network of NBA team Golden State Warriors).
 # http://opiateforthemass.es/articles/analyzing-golden-state-warriors-passing-network-using-graphframes-in-spark/
+
+# The pass information of both team is from UEFA site.
 # http://www.uefa.com/uefachampionsleague/season=2016/matches/round=2000637/match=2015787/postmatch/statistics/index.html#1/2016/2000637/2015787/pitch-view
+
+# Betweenness in igraph.
 # http://igraph.org/r/doc/betweenness.html
 
 # FC Bayern München
@@ -22,6 +27,7 @@ BM_df$value<-as.numeric(as.character(BM_df$value))
 BM_df$from<-gsub(" ", ".", BM_df$from)
 BM_df$from<-gsub("\\?", ".", BM_df$from)
 
+# Pass Network data manipulation for networkD3 packages
 BM_df$source<-as.numeric(as.factor(as.character(BM_df$from)))-1
 BM_df$target<-as.numeric(as.factor(as.character(BM_df$to)))-1
 BM_df_link<-subset(BM_df, value>0)
@@ -33,11 +39,13 @@ BM_df_nodes$group<-as.numeric(as.factor(as.character(BM_df_nodes$position)))-1
 BM_df_nodes<- BM_df_nodes %>% arrange(group)
 BM_df_nodes<- BM_df_nodes %>% arrange(nodeid)
 
+# Pass Network of BM
 forceNetwork(Links = BM_df_link, Nodes = BM_df_nodes,
              Source = "source", Target = "target",
              Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scale.category10()"),
              Group = "position", opacity = 0.8, zoom = TRUE, fontSize = 16, linkDistance = 400,  fontFamily = "Arial", opacityNoHover = TRUE)
 
+# Transform data for igraph package.
 BM_df_link_igraph<-BM_df_link[c(3,1,2)]
 
 BM_from<-list()
@@ -75,6 +83,7 @@ ATM_df$value<-as.numeric(as.character(ATM_df$value))
 ATM_df$from<-gsub(" ", ".", ATM_df$from)
 ATM_df$from<-gsub("\\?", ".", ATM_df$from)
 
+# Pass Network data manipulation for networkD3 packages
 ATM_df$source<-as.numeric(as.factor(as.character(ATM_df$from)))-1
 ATM_df$target<-as.numeric(as.factor(as.character(ATM_df$to)))-1
 ATM_df_link<-subset(ATM_df, value>0)
@@ -91,7 +100,7 @@ forceNetwork(Links = ATM_df_link, Nodes = ATM_df_nodes,
              Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scale.category10()"),
              Group = "position", opacity = 0.8, zoom = TRUE, fontSize = 16, linkDistance = 400,  fontFamily = "Arial", opacityNoHover = TRUE)
 
-
+# Transform data for igraph package.
 ATM_df_link_igraph<-ATM_df_link[c(3,1,2)]
 
 ATM_from<-list()
@@ -114,7 +123,7 @@ degree(ATM_igraph, mode=c('in'))
 degree(ATM_igraph, mode=c('out'))
 betweenness(ATM_igraph)
 
-# ATM& BM Pass Network
+# ATM & BM Pass Network
 df_link<-rbind(BM_df, ATM_df)
 df_link$source<-as.numeric(as.factor(as.character(df_link$from)))-1
 df_link$target<-as.numeric(as.factor(as.character(df_link$to)))-1
@@ -131,7 +140,6 @@ df_nodes$group<-as.numeric(as.factor(as.character(df_nodes$team)))-1
 df_nodes$nodeid<-as.numeric(as.factor(as.character(df_nodes$to)))-1
 df_nodes<- df_nodes %>% arrange(group)
 df_nodes<- df_nodes %>% arrange(nodeid)
-
 
 forceNetwork(Links = df_link, Nodes = df_nodes,
              Source = "source", Target = "target",
