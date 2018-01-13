@@ -1,8 +1,3 @@
-library(networkD3)
-library(dplyr)
-library(reshape2)
-library(igraph)
-
 # This idea is from below article (pass network of NBA team Golden State Warriors).
 # http://opiateforthemass.es/articles/analyzing-golden-state-warriors-passing-network-using-graphframes-in-spark/
 
@@ -12,8 +7,17 @@ library(igraph)
 # Betweenness in igraph.
 # http://igraph.org/r/doc/betweenness.html
 
+library(networkD3)
+library(dplyr)
+library(reshape2)
+library(igraph)
+
+# read the files
+at_url<-'https://raw.githubusercontent.com/kmangyo/Football_Pass_Network/master/R/AT.csv'
+bm_url<-'https://raw.githubusercontent.com/kmangyo/Football_Pass_Network/master/R/BM.csv'
+
 # FC Bayern München
-BM <- read.csv(file.choose(), sep=',', row.names = NULL, stringsAsFactors = FALSE)
+BM <- read.csv(bm_url, sep=',', row.names = NULL, stringsAsFactors = FALSE)
 BM[2:ncol(BM)][is.na(BM[2:ncol(BM)])]<-0
 
 BM_mtrx<-as.matrix(BM)
@@ -34,15 +38,15 @@ BM_df_link<-subset(BM_df, value>0)
 
 BM_df_nodes<-BM_df %>% group_by(to) %>% summarise(size=sum(value))
 BM_df_nodes$nodeid<-as.numeric(as.factor(as.character(BM_df_nodes$to)))-1
-BM_df_nodes$position<-c('GK','DF','DF','MF','FW','FW','MF','MF','MF','DF','DF','DF','FW','MF')
+BM_df_nodes$position<-c('GK','MF','MF','FW','MF','MF','DF','DF','MF','FW','DF','MF')
 BM_df_nodes$group<-as.numeric(as.factor(as.character(BM_df_nodes$position)))-1
 BM_df_nodes<- BM_df_nodes %>% arrange(group)
 BM_df_nodes<- BM_df_nodes %>% arrange(nodeid)
 
 # Pass Network of BM
-forceNetwork(Links = BM_df_link, Nodes = BM_df_nodes,
+forceNetwork(Links = BM_df_link, Nodes = data.frame(BM_df_nodes),
              Source = "source", Target = "target",
-             Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scale.category10()"),
+             Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scaleOrdinal(d3.schemeCategory20);"),
              Group = "position", opacity = 0.8, zoom = TRUE, fontSize = 16, linkDistance = 400,  fontFamily = "Arial", opacityNoHover = TRUE)
 
 # Transform data for igraph package.
@@ -69,7 +73,7 @@ degree(BM_igraph, mode=c('out'))
 betweenness(BM_igraph)
 
 # Club Atlético de Madrid
-ATM <- read.csv(file.choose(), sep=',', row.names = NULL, stringsAsFactors = FALSE)
+ATM <- read.csv(at_url, sep=',', row.names = NULL, stringsAsFactors = FALSE)
 ATM[2:ncol(ATM)][is.na(ATM[2:ncol(ATM)])]<-0
 
 ATM_mtrx<-as.matrix(ATM)
@@ -90,14 +94,14 @@ ATM_df_link<-subset(ATM_df, value>0)
 
 ATM_df_nodes<-ATM_df %>% group_by(to) %>% summarise(size=sum(value))
 ATM_df_nodes$nodeid<-as.numeric(as.factor(as.character(ATM_df_nodes$to)))-1
-ATM_df_nodes$position<-c('GK','MF','MF','FW','MF','MF','DF','DF','MF','FW','DF','MF') 
+ATM_df_nodes$position<- c('GK','DF','DF','MF','FW','FW','MF','MF','MF','DF','DF','DF','FW','MF')
 ATM_df_nodes$group<-as.numeric(as.factor(as.character(ATM_df_nodes$position)))-1
 ATM_df_nodes<- ATM_df_nodes %>% arrange(group)
 ATM_df_nodes<- ATM_df_nodes %>% arrange(nodeid)
 
-forceNetwork(Links = ATM_df_link, Nodes = ATM_df_nodes,
+forceNetwork(Links = ATM_df_link, Nodes = data.frame(ATM_df_nodes),
              Source = "source", Target = "target",
-             Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scale.category10()"),
+             Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scaleOrdinal(d3.schemeCategory20);"),
              Group = "position", opacity = 0.8, zoom = TRUE, fontSize = 16, linkDistance = 400,  fontFamily = "Arial", opacityNoHover = TRUE)
 
 # Transform data for igraph package.
@@ -141,7 +145,7 @@ df_nodes$nodeid<-as.numeric(as.factor(as.character(df_nodes$to)))-1
 df_nodes<- df_nodes %>% arrange(group)
 df_nodes<- df_nodes %>% arrange(nodeid)
 
-forceNetwork(Links = df_link, Nodes = df_nodes,
+forceNetwork(Links = df_link, Nodes = data.frame(df_nodes),
              Source = "source", Target = "target",
-             Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scale.category10()"),
+             Value = "value", NodeID = "to", Nodesize = "size", colourScale = JS("d3.scaleOrdinal(d3.schemeCategory20);"),
              Group = "team", opacity = 0.8, zoom = TRUE, fontSize = 5, linkDistance = 90,  fontFamily = "Arial", opacityNoHover = TRUE)
